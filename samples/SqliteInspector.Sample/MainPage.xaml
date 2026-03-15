@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SqliteInspector.Sample.MainPage"
+             Title="SqliteInspector Sample">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Inspector URL banner -->
+        <Border BackgroundColor="#E3F2FD"
+                Stroke="#90CAF9"
+                StrokeShape="RoundRectangle 8"
+                Padding="12">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="SqliteInspector is running"
+                       FontAttributes="Bold"
+                       FontSize="14" />
+                <Label Text="Open http://localhost:8271 in your browser"
+                       FontSize="12"
+                       TextColor="#1565C0" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Notes list -->
+        <CollectionView x:Name="NotesCollection"
+                        Grid.Row="1"
+                        Margin="0,12,0,0"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="#F44336"
+                                           Invoked="OnDeleteSwipe" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <Border Margin="0,4"
+                                Padding="12"
+                                StrokeShape="RoundRectangle 8"
+                                Stroke="#E0E0E0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Title}"
+                                       FontSize="16"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding CreatedAt}"
+                                       Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <Label Text="No notes yet. Tap + to add one."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="Gray" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <!-- Add button -->
+        <Button x:Name="AddButton"
+                Grid.Row="2"
+                Text="+ Add Note"
+                Clicked="OnAddClicked"
+                Margin="0,12,0,0"
+                HeightRequest="48"
+                BackgroundColor="#1976D2"
+                TextColor="White"
+                FontAttributes="Bold" />
+
+    </Grid>
+
+</ContentPage>

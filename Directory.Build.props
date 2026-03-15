@@ -39,6 +39,7 @@
     <CoverletCollectorVersion>6.0.4</CoverletCollectorVersion>
     <MicrosoftNetTestSdkVersion>17.14.1</MicrosoftNetTestSdkVersion>
     <XunitSkippableFactVersion>1.5.23</XunitSkippableFactVersion>
+    <MauiVersion>10.0.10</MauiVersion>
   </PropertyGroup>
 
 </Project>
