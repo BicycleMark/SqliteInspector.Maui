@@ -1,0 +1,71 @@
+name: Bug Report
+description: Report a bug with SqliteInspector.Maui
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: Which version of SqliteInspector.Maui are you using?
+      placeholder: "0.1.0-preview.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform(s) are affected?
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - macOS (Catalyst)
+        - Windows
+    validations:
+      required: true
+
+  - type: input
+    id: dotnet-version
+    attributes:
+      label: .NET Version
+      description: Output of `dotnet --version`
+      placeholder: "10.0.101"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect?
+      placeholder: |
+        **What happened:**
+        The inspector page shows "Connection refused" when...
+
+        **Expected:**
+        The browser should display the table list at http://localhost:8271
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal steps to trigger the bug
+      placeholder: |
+        1. Register AddSqliteInspector() in MauiProgram.cs
+        2. Build and run on Android emulator
+        3. Open http://localhost:8271 in browser
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Stack Trace
+      description: Paste any relevant log output or exception details
+      render: text
+    validations:
+      required: false
