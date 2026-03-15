@@ -41,6 +41,18 @@ dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release -o .
 - Do NOT include `Co-Authored-By` lines in commits
 - Commit messages: imperative mood, concise
 
+### Branching
+
+- Branch naming: `feature/#N-short-description` or `fix/#N-short-description` (e.g., `feature/#1-sample-app`)
+- Always branch from `main`
+- PRs must reference the issue with `Closes #N` in the body
+
+### Issues
+
+- This repo is the **single source of truth** — all issues live on GitHub
+- If a fieldplatform GitLab issue applies here, migrate it (create on GitHub, close on GitLab with a link)
+- No issue mirroring — once migrated, the GitLab issue is closed
+
 ## Versioning & Publishing
 
 - **MinVer** with plain `v` prefix (e.g., `v0.1.0`, `v1.0.0`)
