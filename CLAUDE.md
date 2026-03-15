@@ -18,9 +18,15 @@ SqliteInspector.Maui/
 ├── SqliteInspector.slnx               # Solution file
 ├── Directory.Build.props              # Shared package versions + MinVer
 ├── CHANGELOG.md                       # Release history
-└── .github/workflows/
-    ├── ci.yml                         # Build + test on push/PR
-    └── publish.yml                    # Pack + push to nuget.org on tag
+└── .github/
+    ├── ISSUE_TEMPLATE/
+    │   ├── bug_report.yml             # Bug report form
+    │   ├── feature_request.yml        # Feature request form
+    │   └── config.yml                 # Disable blank issues
+    ├── pull_request_template.md       # PR template
+    └── workflows/
+        ├── ci.yml                     # Build + test on push/PR
+        └── publish.yml                # Pack + push to nuget.org on tag
 ```
 
 ## Common Commands
@@ -41,6 +47,19 @@ dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release -o .
 - Do NOT include `Co-Authored-By` lines in commits
 - Commit messages: imperative mood, concise
 
+### Merge Rules
+
+| Rule | Setting |
+|------|---------|
+| Merge strategy | **Squash merge only** (merge commit and rebase disabled) |
+| Branch protection on `main` | **Enabled** — no direct pushes |
+| Required status check | **`build-and-test`** must pass before merge |
+| Branch must be up-to-date | **Yes** — strict status checks (must be current with `main`) |
+| Linear history | **Required** |
+| Force pushes to `main` | **Blocked** |
+| Branch deletion after merge | **Automatic** |
+| Enforce for admins | No (owner can bypass in emergencies) |
+
 ### Branching
 
 - Branch naming: `feature/#N-short-description` or `fix/#N-short-description` (e.g., `feature/#1-sample-app`)
@@ -52,6 +71,93 @@ dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release -o .
 - This repo is the **single source of truth** — all issues live on GitHub
 - If a fieldplatform GitLab issue applies here, migrate it (create on GitHub, close on GitLab with a link)
 - No issue mirroring — once migrated, the GitLab issue is closed
+
+### Templates
+
+GitHub auto-fills templates when creating issues and PRs via the web UI.
+
+| Template | Location | Triggers on |
+|----------|----------|-------------|
+| Bug Report | `.github/ISSUE_TEMPLATE/bug_report.yml` | New Issue → "Bug Report" |
+| Feature Request | `.github/ISSUE_TEMPLATE/feature_request.yml` | New Issue → "Feature Request" |
+| PR Template | `.github/pull_request_template.md` | Every new PR |
+
+**Blank issues are disabled** — all issues must use a template.
+
+#### Creating issues via CLI
+
+Bug report:
+```bash
+gh issue create --label bug --title "Inspector page blank on Android 15" --body "$(cat <<'EOF'
+### Package Version
+0.1.0-preview.3
+
+### Platform
+Android
+
+### .NET Version
+10.0.101
+
+### Description
+**What happened:** The inspector page shows a blank white screen after...
+**Expected:** The browser should display the table list
+
+### Steps to Reproduce
+1. Register AddSqliteInspector() in MauiProgram.cs
+2. Build and run on Android 15 emulator (API 35)
+3. adb forward tcp:8271 tcp:8271
+4. Open http://localhost:8271
+
+### Logs / Stack Trace
+```
+No errors in logcat
+```
+EOF
+)"
+```
+
+Feature request:
+```bash
+gh issue create --label enhancement --title "Export query results as CSV" --body "$(cat <<'EOF'
+### Summary
+Add a "Download CSV" button to query results in the inspector UI.
+
+### Use Case
+When debugging data issues, sharing query results with teammates who
+don't have the inspector running locally.
+
+### Proposed API / Approach
+Add a GET /api/export?table=Notes&format=csv endpoint.
+
+### Scope
+Medium — new endpoint or UI feature
+EOF
+)"
+```
+
+#### Creating PRs via CLI
+
+The PR template auto-fills. Populate all sections:
+```bash
+gh pr create --title "Fix blank page on Android 15" --body "$(cat <<'EOF'
+## Summary
+Fix inspector HTML not loading on Android 15 due to WebView security policy.
+
+## Closes
+Closes #5
+
+## Changes
+| File | Change |
+|------|--------|
+| `DbInspectorServer.cs` | Add Content-Security-Policy header |
+
+## Test Plan
+- [x] `dotnet build SqliteInspector.slnx` — builds with 0 errors
+- [x] `dotnet test SqliteInspector.slnx` — all tests pass
+- [ ] Deploy to Android 15 emulator, verify inspector loads
+EOF
+)"
+```
 
 ## Versioning & Publishing
 

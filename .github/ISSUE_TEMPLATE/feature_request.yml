@@ -1,0 +1,46 @@
+name: Feature Request
+description: Suggest an enhancement or new capability
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing the feature
+      placeholder: Add support for exporting query results as CSV
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Why is this useful? What problem does it solve?
+      placeholder: |
+        When debugging data issues, I often need to share query results
+        with teammates who don't have the inspector running...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-api
+    attributes:
+      label: Proposed API / Approach
+      description: If you have ideas on how this should work, share them here
+      placeholder: |
+        Add a "Download CSV" button to the query results panel, or
+        expose a GET /api/export?table=Notes&format=csv endpoint...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: How big is this change?
+      options:
+        - Small — single file or minor tweak
+        - Medium — new endpoint or UI feature
+        - Large — architectural change or new module
+    validations:
+      required: true
