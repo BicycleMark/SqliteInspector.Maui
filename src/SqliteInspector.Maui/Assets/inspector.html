@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQLite Inspector</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --fg: #212529;
+  --fg-muted: #6c757d;
+  --border: #dee2e6;
+  --accent: #0d6efd;
+  --accent-hover: #0b5ed7;
+  --row-alt: #f8f9fa;
+  --row-hover: #e9ecef;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-active: #e2e6ea;
+  --badge-bg: #e9ecef;
+  --badge-fg: #495057;
+  --success: #198754;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --code-bg: #f1f3f5;
+  --scrollbar-thumb: #ced4da;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --bg-secondary: #16213e;
+  --fg: #e0e0e0;
+  --fg-muted: #8892a0;
+  --border: #2d3748;
+  --accent: #4dabf7;
+  --accent-hover: #339af0;
+  --row-alt: #16213e;
+  --row-hover: #1f3050;
+  --sidebar-bg: #16213e;
+  --sidebar-active: #1f3050;
+  --badge-bg: #2d3748;
+  --badge-fg: #a0aec0;
+  --success: #51cf66;
+  --warning: #fcc419;
+  --danger: #ff6b6b;
+  --code-bg: #1e293b;
+  --scrollbar-thumb: #4a5568;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a2e;
+    --bg-secondary: #16213e;
+    --fg: #e0e0e0;
+    --fg-muted: #8892a0;
+    --border: #2d3748;
+    --accent: #4dabf7;
+    --accent-hover: #339af0;
+    --row-alt: #16213e;
+    --row-hover: #1f3050;
+    --sidebar-bg: #16213e;
+    --sidebar-active: #1f3050;
+    --badge-bg: #2d3748;
+    --badge-fg: #a0aec0;
+    --success: #51cf66;
+    --warning: #fcc419;
+    --danger: #ff6b6b;
+    --code-bg: #1e293b;
+    --scrollbar-thumb: #4a5568;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.toolbar h1 {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.db-info {
+  font-size: 12px;
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toggle-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.toggle-btn:hover { background: var(--row-hover); }
+.toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Layout */
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 10px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fg-muted);
+}
+
+.table-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 4px 4px;
+}
+
+.table-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+
+.table-item:hover { background: var(--row-hover); }
+.table-item.active { background: var(--sidebar-active); font-weight: 600; }
+
+.table-item .badge {
+  font-size: 11px;
+  background: var(--badge-bg);
+  color: var(--badge-fg);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 400;
+}
+
+/* Main panel */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel-subtitle {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.schema-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.schema-btn:hover { background: var(--row-hover); }
+
+/* Data area */
+.data-area {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* Data table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+  padding: 6px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.data-table td {
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table tr:nth-child(even) td { background: var(--row-alt); }
+.data-table tr:hover td { background: var(--row-hover); }
+
+.null-val { color: var(--fg-muted); font-style: italic; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.pagination button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pagination button:hover:not(:disabled) { background: var(--row-hover); }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+
+/* Schema overlay */
+.schema-panel {
+  display: none;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  flex-shrink: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.schema-panel.visible { display: block; }
+
+.schema-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.schema-table th {
+  text-align: left;
+  padding: 4px 10px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.schema-table td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
+.pk-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: -apple-system, sans-serif;
+}
+
+/* Query section */
+.query-section {
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+
+.query-section summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+  padding: 2px 0;
+}
+
+.query-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: flex-start;
+}
+
+.query-textarea {
+  flex: 1;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+  font-size: 12px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--fg);
+  resize: vertical;
+  min-height: 38px;
+  max-height: 120px;
+}
+
+.query-textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.run-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.run-btn:hover { background: var(--accent-hover); }
+.run-btn:disabled { opacity: 0.5; cursor: default; }
+
+.query-hint {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+.query-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.query-results {
+  margin-top: 8px;
+  max-height: 200px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>SQLite Inspector</h1>
+  <span class="db-info" id="dbInfo"></span>
+  <button class="toggle-btn" id="copyPathBtn" title="Copy database path" style="display:none">Copy Path</button>
+  <div class="toolbar-actions">
+    <button class="toggle-btn" id="themeBtn" title="Toggle dark mode"></button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-header">Tables</div>
+    <div class="table-list" id="tableList"></div>
+  </div>
+
+  <div class="main">
+    <div class="panel-header" id="panelHeader" style="display:none">
+      <span class="panel-title" id="panelTitle"></span>
+      <span class="panel-subtitle" id="panelSubtitle"></span>
+      <button class="schema-btn" id="schemaBtn">Schema</button>
+    </div>
+
+    <div class="schema-panel" id="schemaPanel"></div>
+
+    <div class="data-area" id="dataArea">
+      <div class="empty-state" id="emptyState">Select a table to view its data</div>
+    </div>
+
+    <div class="pagination" id="pagination" style="display:none">
+      <button id="prevBtn">&#9664; Prev</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn">Next &#9654;</button>
+    </div>
+
+    <details class="query-section">
+      <summary>SQL Query</summary>
+      <div class="query-input-row">
+        <textarea class="query-textarea" id="queryInput" rows="2" placeholder="SELECT * FROM ..."></textarea>
+        <button class="run-btn" id="runBtn">Run</button>
+      </div>
+      <div class="query-hint">SELECT queries only</div>
+      <div class="query-error" id="queryError"></div>
+      <div class="query-results" id="queryResults"></div>
+    </details>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // State
+  let currentTable = null;
+  let currentOffset = 0;
+  let totalRows = 0;
+  const pageSize = 100;
+  // Elements
+  const $ = id => document.getElementById(id);
+  const dbInfo = $('dbInfo');
+  const copyPathBtn = $('copyPathBtn');
+  const tableList = $('tableList');
+  const panelHeader = $('panelHeader');
+  const panelTitle = $('panelTitle');
+  const panelSubtitle = $('panelSubtitle');
+  const schemaBtn = $('schemaBtn');
+  const schemaPanel = $('schemaPanel');
+  const dataArea = $('dataArea');
+  const emptyState = $('emptyState');
+  const pagination = $('pagination');
+  const prevBtn = $('prevBtn');
+  const nextBtn = $('nextBtn');
+  const pageInfo = $('pageInfo');
+  const themeBtn = $('themeBtn');
+  const queryInput = $('queryInput');
+  const runBtn = $('runBtn');
+  const queryError = $('queryError');
+  const queryResults = $('queryResults');
+
+  // Theme
+  function getTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'auto';
+  }
+
+  function isDark() {
+    const t = getTheme();
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function updateThemeBtn() {
+    themeBtn.textContent = isDark() ? '\u2600\uFE0F Light' : '\uD83C\uDF19 Dark';
+  }
+
+  themeBtn.addEventListener('click', function() {
+    const current = getTheme();
+    let next;
+    if (current === 'auto') {
+      next = isDark() ? 'light' : 'dark';
+    } else if (current === 'dark') {
+      next = 'light';
+    } else {
+      next = 'dark';
+    }
+    document.documentElement.setAttribute('data-theme', next);
+    updateThemeBtn();
+  });
+
+  updateThemeBtn();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeBtn);
+
+  // API helpers
+  async function api(path) {
+    var sep = path.indexOf('?') === -1 ? '?' : '&';
+    const res = await fetch(path + sep + '_t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(body.error || res.statusText);
+    }
+    return res.json();
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  // Fetch database info
+  let dbPath = '';
+
+  async function fetchInfo() {
+    try {
+      const info = await api('/api/info');
+      dbPath = info.databasePath;
+      var fileName = info.databasePath.split('/').pop() || info.databasePath;
+      dbInfo.textContent = '\uD83D\uDCC2 ' + fileName + '  (' + formatBytes(info.fileSize) + ')  \u2014 SQLite ' + info.sqliteVersion;
+      dbInfo.title = info.databasePath;
+      copyPathBtn.style.display = '';
+    } catch(e) {
+      dbInfo.textContent = 'Could not load database info';
+    }
+  }
+
+  copyPathBtn.addEventListener('click', async function() {
+    try {
+      await navigator.clipboard.writeText(dbPath);
+      copyPathBtn.textContent = 'Copied!';
+      setTimeout(function() { copyPathBtn.textContent = 'Copy Path'; }, 1500);
+    } catch(_) {
+      copyPathBtn.textContent = 'Failed';
+      setTimeout(function() { copyPathBtn.textContent = 'Copy Path'; }, 1500);
+    }
+  });
+
+  // Fetch and render table list
+  async function fetchTables() {
+    try {
+      const tables = await api('/api/tables');
+      renderTableList(tables);
+    } catch(e) {
+      tableList.innerHTML = '<div style="padding:12px;color:var(--danger)">Error loading tables</div>';
+    }
+  }
+
+  function renderTableList(tables) {
+    tableList.innerHTML = '';
+    tables.forEach(function(t) {
+      const item = document.createElement('div');
+      item.className = 'table-item' + (t.name === currentTable ? ' active' : '');
+      item.innerHTML = '<span>' + esc(t.name) + '</span><span class="badge">' + t.rowCount + '</span>';
+      item.addEventListener('click', function() { selectTable(t.name); });
+      tableList.appendChild(item);
+    });
+  }
+
+  // Select a table
+  async function selectTable(name) {
+    currentTable = name;
+    currentOffset = 0;
+    schemaPanel.classList.remove('visible');
+
+    // Update sidebar active state
+    tableList.querySelectorAll('.table-item').forEach(function(el) {
+      el.classList.toggle('active', el.querySelector('span').textContent === name);
+    });
+
+    await fetchRows();
+  }
+
+  // Fetch and render rows
+  async function fetchRows() {
+    if (!currentTable) return;
+
+    panelHeader.style.display = 'flex';
+    emptyState.style.display = 'none';
+
+    try {
+      const data = await api('/api/tables/' + encodeURIComponent(currentTable) + '?offset=' + currentOffset + '&limit=' + pageSize);
+      totalRows = data.totalRows;
+
+      panelTitle.textContent = currentTable;
+      panelSubtitle.textContent = '(' + totalRows + ' row' + (totalRows !== 1 ? 's' : '') + ')';
+
+      renderDataTable(data.columnNames, data.rows);
+      renderPagination();
+    } catch(e) {
+      dataArea.innerHTML = '<div class="empty-state" style="color:var(--danger)">' + esc(e.message) + '</div>';
+      pagination.style.display = 'none';
+    }
+  }
+
+  function renderDataTable(columns, rows) {
+    if (rows.length === 0) {
+      dataArea.innerHTML = '<div class="empty-state">Table is empty</div>';
+      return;
+    }
+
+    let html = '<table class="data-table"><thead><tr>';
+    columns.forEach(function(c) { html += '<th>' + esc(c) + '</th>'; });
+    html += '</tr></thead><tbody>';
+
+    rows.forEach(function(row) {
+      html += '<tr>';
+      columns.forEach(function(c) {
+        const val = row[c];
+        if (val === null || val === undefined) {
+          html += '<td><span class="null-val">NULL</span></td>';
+        } else {
+          html += '<td title="' + escAttr(String(val)) + '">' + esc(String(val)) + '</td>';
+        }
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    dataArea.innerHTML = html;
+  }
+
+  function renderPagination() {
+    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+    const currentPage = Math.floor(currentOffset / pageSize) + 1;
+
+    if (totalPages <= 1) {
+      pagination.style.display = 'none';
+      return;
+    }
+
+    pagination.style.display = 'flex';
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
+    pageInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+  }
+
+  prevBtn.addEventListener('click', function() {
+    if (currentOffset >= pageSize) {
+      currentOffset -= pageSize;
+      fetchRows();
+    }
+  });
+
+  nextBtn.addEventListener('click', function() {
+    if (currentOffset + pageSize < totalRows) {
+      currentOffset += pageSize;
+      fetchRows();
+    }
+  });
+
+  // Schema
+  schemaBtn.addEventListener('click', async function() {
+    if (!currentTable) return;
+
+    if (schemaPanel.classList.contains('visible')) {
+      schemaPanel.classList.remove('visible');
+      return;
+    }
+
+    try {
+      const schema = await api('/api/tables/' + encodeURIComponent(currentTable) + '/schema');
+      let html = '<table class="schema-table"><thead><tr>' +
+        '<th>Column</th><th>Type</th><th>Not Null</th><th>Default</th><th>PK</th>' +
+        '</tr></thead><tbody>';
+
+      schema.columns.forEach(function(col) {
+        html += '<tr>';
+        html += '<td>' + esc(col.name) + '</td>';
+        html += '<td>' + esc(col.type || 'ANY') + '</td>';
+        html += '<td>' + (col.notNull ? 'Yes' : '') + '</td>';
+        html += '<td>' + (col.defaultValue !== null ? esc(col.defaultValue) : '') + '</td>';
+        html += '<td>' + (col.isPrimaryKey ? '<span class="pk-badge">PK</span>' : '') + '</td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      schemaPanel.innerHTML = html;
+      schemaPanel.classList.add('visible');
+    } catch(e) {
+      schemaPanel.innerHTML = '<div style="color:var(--danger);padding:4px">' + esc(e.message) + '</div>';
+      schemaPanel.classList.add('visible');
+    }
+  });
+
+  // SQL query
+  runBtn.addEventListener('click', runQuery);
+  queryInput.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runQuery();
+    }
+  });
+
+  async function runQuery() {
+    const sql = queryInput.value.trim();
+    if (!sql) return;
+
+    queryError.textContent = '';
+    queryResults.innerHTML = '';
+    runBtn.disabled = true;
+
+    try {
+      const data = await api('/api/query?sql=' + encodeURIComponent(sql));
+      renderQueryResults(data.columnNames, data.rows);
+    } catch(e) {
+      queryError.textContent = e.message;
+    } finally {
+      runBtn.disabled = false;
+    }
+  }
+
+  function renderQueryResults(columns, rows) {
+    if (rows.length === 0) {
+      queryResults.innerHTML = '<div style="padding:12px;color:var(--fg-muted);font-size:12px">No results</div>';
+      return;
+    }
+
+    let html = '<table class="data-table"><thead><tr>';
+    columns.forEach(function(c) { html += '<th>' + esc(c) + '</th>'; });
+    html += '</tr></thead><tbody>';
+
+    rows.forEach(function(row) {
+      html += '<tr>';
+      columns.forEach(function(c) {
+        const val = row[c];
+        if (val === null || val === undefined) {
+          html += '<td><span class="null-val">NULL</span></td>';
+        } else {
+          html += '<td>' + esc(String(val)) + '</td>';
+        }
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    queryResults.innerHTML = html;
+  }
+
+  // Live updates via SSE (Server-Sent Events) — always on
+  let eventSource = null;
+
+  function connectSSE() {
+    if (eventSource) return;
+
+    eventSource = new EventSource('/api/changes');
+
+    eventSource.addEventListener('change', function() {
+      fetchTables();
+      if (currentTable) fetchRows();
+    });
+
+    eventSource.addEventListener('error', function() {
+      if (eventSource && eventSource.readyState === EventSource.CLOSED) {
+        eventSource = null;
+        setTimeout(connectSSE, 3000);
+      }
+    });
+  }
+
+  connectSSE();
+
+  // Escape helpers
+  function esc(s) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+  }
+
+  function escAttr(s) {
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Init
+  fetchInfo();
+  fetchTables();
+})();
+</script>
+</body>
+</html>

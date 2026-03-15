@@ -1,0 +1,17 @@
+
+<Solution>
+  <!-- Source -->
+  <Folder Name="/src/">
+    <Project Path="src/SqliteInspector.Maui/SqliteInspector.Maui.csproj" />
+  </Folder>
+
+  <!-- Tests -->
+  <Folder Name="/tests/">
+    <Project Path="tests/SqliteInspector.Maui.Tests/SqliteInspector.Maui.Tests.csproj" />
+  </Folder>
+
+  <!-- Tools -->
+  <Folder Name="/tools/">
+    <Project Path="tools/dotnet-sqlite-inspect/dotnet-sqlite-inspect.csproj" />
+  </Folder>
+</Solution>

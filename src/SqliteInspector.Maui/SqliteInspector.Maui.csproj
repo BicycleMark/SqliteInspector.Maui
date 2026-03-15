@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SqliteInspector.Maui</RootNamespace>
+
+    <!-- NuGet package metadata -->
+    <PackageId>SqliteInspector.Maui</PackageId>
+    <Description>A lightweight SQLite database inspector for .NET MAUI apps. Browse tables, run queries, and monitor changes via a built-in web UI during development.</Description>
+    <Authors>Mark Wardell</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/BicycleMark/SqliteInspector.Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/BicycleMark/SqliteInspector.Maui.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>sqlite;maui;inspector;debug;database</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SqliteInspector.Maui.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EmbedIO" Version="$(EmbedIOVersion)" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="$(MicrosoftDataSqliteVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\inspector.html" />
+  </ItemGroup>
+
+  <!-- Pack README and icon into the NuGet package -->
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>

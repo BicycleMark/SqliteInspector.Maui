@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SqliteInspect</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sqlite-inspect</ToolCommandName>
+    <PackageId>dotnet-sqlite-inspect</PackageId>
+    <Description>Companion CLI tool for SqliteInspector.Maui — handles port forwarding and browser launch for mobile SQLite inspection.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for MinVer
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore SqliteInspector.slnx
+
+      - name: Build
+        run: dotnet build SqliteInspector.slnx --no-restore -c Release
+
+      - name: Test
+        run: dotnet test SqliteInspector.slnx --no-build -c Release --logger trx --results-directory ./TestResults
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "           TEST RESULTS SUMMARY"
+          echo "============================================"
+          total=0; passed=0; failed=0
+          for trx in TestResults/*.trx; do
+            if [ -f "$trx" ]; then
+              t=$(grep -oP 'total="\K[0-9]+' "$trx" | head -1)
+              p=$(grep -oP 'passed="\K[0-9]+' "$trx" | head -1)
+              f=$(grep -oP 'failed="\K[0-9]+' "$trx" | head -1)
+              total=$((total + ${t:-0}))
+              passed=$((passed + ${p:-0}))
+              failed=$((failed + ${f:-0}))
+            fi
+          done
+          echo "Total:  $total"
+          echo "Passed: $passed"
+          echo "Failed: $failed"
+          echo "============================================"
+          if [ "$failed" -gt 0 ]; then exit 1; fi

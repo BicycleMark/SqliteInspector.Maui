@@ -1,0 +1,44 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworks)' == ''">net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Mark Wardell</Authors>
+    <Copyright>Copyright © 2024</Copyright>
+    <RepositoryUrl>https://github.com/BicycleMark/SqliteInspector.Maui.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Automatic versioning from git tags -->
+  <PropertyGroup>
+    <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Shared package versions -->
+  <PropertyGroup>
+    <EmbedIOVersion>3.5.2</EmbedIOVersion>
+    <MicrosoftDataSqliteVersion>10.0.3</MicrosoftDataSqliteVersion>
+    <MicrosoftExtensionsVersion>10.0.0</MicrosoftExtensionsVersion>
+    <FluentAssertionsVersion>7.2.0</FluentAssertionsVersion>
+    <NSubstituteVersion>5.3.0</NSubstituteVersion>
+    <XunitVersion>2.9.3</XunitVersion>
+    <XunitRunnerVersion>3.1.4</XunitRunnerVersion>
+    <CoverletCollectorVersion>6.0.4</CoverletCollectorVersion>
+    <MicrosoftNetTestSdkVersion>17.14.1</MicrosoftNetTestSdkVersion>
+    <XunitSkippableFactVersion>1.5.23</XunitSkippableFactVersion>
+  </PropertyGroup>
+
+</Project>
