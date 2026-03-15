@@ -47,6 +47,19 @@ dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release -o .
 - Do NOT include `Co-Authored-By` lines in commits
 - Commit messages: imperative mood, concise
 
+### Merge Rules
+
+| Rule | Setting |
+|------|---------|
+| Merge strategy | **Squash merge only** (merge commit and rebase disabled) |
+| Branch protection on `main` | **Enabled** — no direct pushes |
+| Required status check | **`build-and-test`** must pass before merge |
+| Branch must be up-to-date | **Yes** — strict status checks (must be current with `main`) |
+| Linear history | **Required** |
+| Force pushes to `main` | **Blocked** |
+| Branch deletion after merge | **Automatic** |
+| Enforce for admins | No (owner can bypass in emergencies) |
+
 ### Branching
 
 - Branch naming: `feature/#N-short-description` or `fix/#N-short-description` (e.g., `feature/#1-sample-app`)
