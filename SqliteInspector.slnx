@@ -10,6 +10,11 @@
     <Project Path="tests/SqliteInspector.Maui.Tests/SqliteInspector.Maui.Tests.csproj" />
   </Folder>
 
+  <!-- Samples -->
+  <Folder Name="/samples/">
+    <Project Path="samples/SqliteInspector.Sample/SqliteInspector.Sample.csproj" />
+  </Folder>
+
   <!-- Tools -->
   <Folder Name="/tools/">
     <Project Path="tools/dotnet-sqlite-inspect/dotnet-sqlite-inspect.csproj" />
