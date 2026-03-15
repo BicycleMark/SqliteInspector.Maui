@@ -18,14 +18,18 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore SqliteInspector.slnx
+        run: |
+          dotnet restore src/SqliteInspector.Maui
+          dotnet restore tests/SqliteInspector.Maui.Tests
 
       # Build and test in Debug so #if DEBUG code is exercised (all 52 tests)
       - name: Build (Debug)
-        run: dotnet build SqliteInspector.slnx --no-restore
+        run: |
+          dotnet build src/SqliteInspector.Maui --no-restore
+          dotnet build tests/SqliteInspector.Maui.Tests --no-restore
 
       - name: Test
-        run: dotnet test SqliteInspector.slnx --no-build --logger trx --results-directory ./TestResults
+        run: dotnet test tests/SqliteInspector.Maui.Tests --no-build --logger trx --results-directory ./TestResults
 
       - name: Test Summary
         if: always()
