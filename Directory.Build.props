@@ -14,6 +14,14 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <!-- SourceLink + deterministic builds -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <!-- Automatic versioning from git tags -->
   <PropertyGroup>
     <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
@@ -22,6 +30,10 @@
 
   <ItemGroup>
     <PackageReference Include="MinVer" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -40,6 +52,7 @@
     <MicrosoftNetTestSdkVersion>17.14.1</MicrosoftNetTestSdkVersion>
     <XunitSkippableFactVersion>1.5.23</XunitSkippableFactVersion>
     <MauiVersion>10.0.10</MauiVersion>
+    <MicrosoftSourceLinkGitHubVersion>8.0.0</MicrosoftSourceLinkGitHubVersion>
   </PropertyGroup>
 
 </Project>
