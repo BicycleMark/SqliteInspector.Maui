@@ -20,14 +20,39 @@ jobs:
       - name: Restore
         run: dotnet restore SqliteInspector.slnx
 
-      - name: Build
-        run: dotnet build SqliteInspector.slnx --no-restore -c Release
+      # Build and test in Debug so #if DEBUG code is exercised (all 52 tests)
+      - name: Build (Debug)
+        run: dotnet build SqliteInspector.slnx --no-restore
 
       - name: Test
-        run: dotnet test SqliteInspector.slnx --no-build -c Release
+        run: dotnet test SqliteInspector.slnx --no-build --logger trx --results-directory ./TestResults
 
-      - name: Pack
-        run: dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release --no-build -o ./nupkg
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "============================================"
+          echo "           TEST RESULTS SUMMARY"
+          echo "============================================"
+          total=0; passed=0; failed=0
+          for trx in TestResults/*.trx; do
+            if [ -f "$trx" ]; then
+              t=$(grep -oP 'total="\K[0-9]+' "$trx" | head -1)
+              p=$(grep -oP 'passed="\K[0-9]+' "$trx" | head -1)
+              f=$(grep -oP 'failed="\K[0-9]+' "$trx" | head -1)
+              total=$((total + ${t:-0}))
+              passed=$((passed + ${p:-0}))
+              failed=$((failed + ${f:-0}))
+            fi
+          done
+          echo "Total:  $total"
+          echo "Passed: $passed"
+          echo "Failed: $failed"
+          echo "============================================"
+          if [ "$failed" -gt 0 ]; then exit 1; fi
+
+      # Pack in Release for NuGet
+      - name: Pack (Release)
+        run: dotnet pack src/SqliteInspector.Maui/SqliteInspector.Maui.csproj -c Release -o ./nupkg
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}

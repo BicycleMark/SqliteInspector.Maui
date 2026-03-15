@@ -23,10 +23,10 @@ jobs:
         run: dotnet restore SqliteInspector.slnx
 
       - name: Build
-        run: dotnet build SqliteInspector.slnx --no-restore -c Release
+        run: dotnet build SqliteInspector.slnx --no-restore
 
       - name: Test
-        run: dotnet test SqliteInspector.slnx --no-build -c Release --logger trx --results-directory ./TestResults
+        run: dotnet test SqliteInspector.slnx --no-build --logger trx --results-directory ./TestResults
 
       - name: Test Summary
         if: always()
